@@ -18,7 +18,6 @@ path <- "api/v1/competitions/list"
 
 kaggle_get <- GET(url = apibaseurl, path = path, authenticate(apikey$username, apikey$key))
 
-
 kaggle_get$status_code
 
 kaggle_competition_list <- kaggle_get$content %>% 
@@ -36,24 +35,24 @@ data_get <- GET(url = apibaseurl, path = data_path, authenticate(apikey$username
 
 data_get$status_code
 
-data_get$content %>% rawToChar() %>% fromJSON()
+titanic_datafiles <- data_get$content %>% rawToChar() %>% fromJSON()
 
 # Download data files
 
-testdata_path <- paste0("api/v1/competitions/data/download/", kaggle_competition_list$id[5], "/test.csv")
-traindata_path <- paste0("api/v1/competitions/data/download/", kaggle_competition_list$id[5], "/train.csv")
-genderdata_path <- paste0("api/v1/competitions/data/download/", kaggle_competition_list$id[5], "/gender_submission.csv")
+titanic_data <- list()
 
-titanic_get_test <- GET(url = apibaseurl, path = testdata_path, authenticate(apikey$username, apikey$key))
-titanic_get_train <- GET(url = apibaseurl, path = traindata_path, authenticate(apikey$username, apikey$key))
-titanic_get_gender <- GET(url = apibaseurl, path = genderdata_path, authenticate(apikey$username, apikey$key))
+for (i in 1:nrow(titanic_datafiles)){
+  
+  path <- paste0("api/v1/competitions/data/download/", 
+                 kaggle_competition_list$id[5], "/", titanic_datafiles$name[i])
+  
+  getresult <- GET(url = apibaseurl, path = path, authenticate(apikey$username, apikey$key))
+  
+  titanic_data[i] <- getresult$content %>%
+    rawToChar() %>% read_csv() %>% list()
+}
 
-titanic_data_test <- titanic_get_test$content %>%
-  rawToChar() %>% read_csv()
-
-titanic_data_train <- titanicget_test$content %>%
-  rawToChar() %>% read_csv()
-
-titanic_data_gender <- titanic_get_test$content %>%
-  rawToChar() %>% read_csv()
+gender_data <- titanic_data[[1]]
+train_data <- titanic_data[[2]]
+test_data <- titanic_data[[3]]
 
