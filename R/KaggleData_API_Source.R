@@ -56,3 +56,51 @@ gender_data <- titanic_data[[1]]
 train_data <- titanic_data[[2]]
 test_data <- titanic_data[[3]]
 
+# Data Analysis
+
+train_data %>% str()
+
+train_data %>% select(Pclass) %>% table()
+
+## Split train_data into train and test data
+
+library(caTools)
+library(rpart)
+
+set.seed(123)
+
+train_dat <- train_data %>% sample_frac(.75)
+test_dat <- anti_join(train_data, train_dat, by = 'PassengerId')
+
+fit <- rpart(Survived~., data = train_dat %>% select(-Name, -Ticket, -Cabin), method = "class")
+
+predicted <- predict(fit, test_dat, type = "class")
+
+table_results <- table(test_dat$Survived, predicted)
+
+prediction_results <- predict(fit, test_data, type = "class")
+
+test_data$Survived <- prediction_results
+
+# test_data %>%
+#   select(PassengerId, Survived) %>%
+#   write.csv("submission.csv", row.names = FALSE)
+
+
+
+
+# Gender
+
+train_data %>% 
+  select(Sex, Survived) %>% 
+  table() %>% 
+  prop.table(1)
+
+train_data %>% 
+  select(Age) %>% 
+  ggplot(aes(x = Age)) +
+  geom_histogram()
+
+train_data_V2 <- train_data %>% 
+  mutate(Child = Age < 18)
+
